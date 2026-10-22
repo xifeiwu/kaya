@@ -22,10 +22,9 @@ function board(rows: string[]): SignMap {
 function counts(
   signMap: SignMap,
   method: 'territory' | 'area',
-  dead: Set<string> = new Set(),
-  probabilityMap: number[][] | null = null
+  dead: Set<string> = new Set()
 ): ScoreCounts {
-  const scored = calculateScore(signMap, dead, method, probabilityMap);
+  const scored = calculateScore(signMap, dead, method);
   return {
     method,
     blackTerritory: scored.blackTerritory,
@@ -69,7 +68,7 @@ describe('goscorer positions', () => {
     expect(area.blackStones).toBe(3);
     expect(area.whiteStones).toBe(8);
     expect(area.whiteTerritory).toBe(11);
-    expect(calculateScore(signMap, new Set(), 'territory', null).territories[2][0]).toBe(0);
+    expect(calculateScore(signMap, new Set(), 'territory').territories[2][0]).toBe(0);
   });
 
   test('seki has no territory, and an estimate does not fill the shared liberties', () => {
@@ -85,9 +84,7 @@ describe('goscorer positions', () => {
     expect(area.whiteTerritory).toBe(0);
 
     const hostile = signMap.map(row => row.map(() => 1));
-    const estimated = counts(signMap, 'territory', new Set(), hostile);
-    expect(estimated.blackTerritory).toBe(0);
-    expect(estimated.whiteTerritory).toBe(0);
+    expect(suggestDeadStones(signMap, hostile).size).toBe(0);
   });
 
   test('marked dead stones become territory, and area does not count them as stones', () => {
@@ -112,7 +109,7 @@ describe('goscorer positions', () => {
     expect(totals.black).toBe(0);
   });
 
-  test('a dame-connected group is not removed, and estimate does not paint non-dame empties', () => {
+  test('dame stays empty, including a group Monte Carlo would call dead', () => {
     const signMap = board([
       '...XXOOXXXX..',
       '...XOO.O.OXX.',
@@ -134,12 +131,15 @@ describe('goscorer positions', () => {
     prob[11][4] = 1;
     expect(suggestDeadStones(signMap, prob).size).toBe(0);
 
-    const hostile = signMap.map(row => row.map(() => 1));
-    const estimated = calculateScore(signMap, new Set(), 'territory', hostile);
-    // A6 is empty and not dame, so the rules score leaves it blank.
-    expect(estimated.territories[7][0]).toBe(0);
-    expect(estimated.blackTerritory).toBe(24);
-    expect(estimated.whiteTerritory).toBe(7);
+    const scored = calculateScore(signMap, new Set(), 'territory');
+    // C1, F1, E4, F3 are black-side dame; H11 is white-side dame.
+    expect(scored.territories[12][2]).toBe(0);
+    expect(scored.territories[12][5]).toBe(0);
+    expect(scored.territories[9][4]).toBe(0);
+    expect(scored.territories[10][5]).toBe(0);
+    expect(scored.territories[2][7]).toBe(0);
+    expect(scored.blackTerritory).toBe(19);
+    expect(scored.whiteTerritory).toBe(7);
   });
 
   test('stones enclosed with no dame liberty are still marked dead', () => {
@@ -149,6 +149,6 @@ describe('goscorer positions', () => {
     expect([...dead].sort()).toEqual(
       ['1,1', '1,2', '1,3', '2,1', '2,3', '3,1', '3,2', '3,3'].sort()
     );
-    expect(calculateScore(signMap, dead, 'territory', null).whiteTerritory).toBe(9);
+    expect(calculateScore(signMap, dead, 'territory').whiteTerritory).toBe(9);
   });
 });

@@ -9,16 +9,13 @@
  *
  * The board overlay paints territory points only. Living stones stay unpainted
  * so the stone layer remains visible.
- * Estimate mode fills dame from the Monte Carlo map, except seki points and
- * their neighbors — those liberties are shared and must stay neutral.
+ * Dame stays empty. OGS does not turn those points into territory, and neither
+ * does the estimate: Monte Carlo is only used to suggest dead stones.
  */
 
 import type { Sign, SignMap } from '@kaya/goboard';
 import type { Ruleset, ScoringMethod } from '../types/game';
 import * as goscorer from './goscorer/goscorer.mjs';
-
-/** Probability threshold for filling dame during estimation. */
-const TERRITORY_THRESHOLD = 0.2;
 
 /** Probability threshold for dead stone detection (higher = more conservative). */
 export const DEAD_STONE_THRESHOLD = 0.4;
@@ -114,34 +111,10 @@ function paint(territories: SignMap, x: number, y: number, owner: goscorer.color
   return 0;
 }
 
-/** Seki points and the liberties touching them are not estimate territory. */
-function sekiBlocked(scored: goscorer.LocScore[][]): boolean[][] {
-  const height = scored.length;
-  const width = scored[0]?.length ?? 0;
-  const blocked = Array.from({ length: height }, () => Array.from({ length: width }, () => false));
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      if (scored[y][x].belongsToSekiGroup === goscorer.EMPTY) continue;
-      blocked[y][x] = true;
-      const neighbors = [
-        [x + 1, y],
-        [x - 1, y],
-        [x, y + 1],
-        [x, y - 1],
-      ];
-      for (const [nx, ny] of neighbors) {
-        if (ny >= 0 && ny < height && nx >= 0 && nx < width) blocked[ny][nx] = true;
-      }
-    }
-  }
-  return blocked;
-}
-
 export function calculateScore(
   signMap: SignMap,
   deadStones: Set<string>,
-  method: ScoringMethod,
-  probabilityMap: number[][] | null
+  method: ScoringMethod
 ): ScoreResult {
   const height = signMap.length;
   const width = signMap[0]?.length ?? 0;
@@ -153,11 +126,8 @@ export function calculateScore(
   let blackStones = 0;
   let whiteStones = 0;
 
-  // Territory scoring is also the seki map for estimate mode under either ruleset.
   const scored =
-    method === 'territory' || probabilityMap
-      ? goscorer.territoryScoring(stones, marked, false)
-      : null;
+    method === 'territory' ? goscorer.territoryScoring(stones, marked, false) : null;
 
   if (method === 'territory' && scored) {
     for (let y = 0; y < height; y++) {
@@ -188,26 +158,6 @@ export function calculateScore(
     }
   }
 
-  if (probabilityMap && scored) {
-    const blocked = sekiBlocked(scored);
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        if (signMap[y][x] !== 0 || territories[y][x] !== 0 || blocked[y][x]) continue;
-        // Goscorer left non-dame empties blank on purpose: false eyes, and points
-        // the other color can still reach. Estimate only fills dame.
-        if (!scored[y][x].isDame) continue;
-        const prob = probabilityMap[y]?.[x] ?? 0;
-        if (prob > TERRITORY_THRESHOLD) {
-          territories[y][x] = 1;
-          blackTerritory++;
-        } else if (prob < -TERRITORY_THRESHOLD) {
-          territories[y][x] = -1;
-          whiteTerritory++;
-        }
-      }
-    }
-  }
-
   return { method, blackTerritory, whiteTerritory, blackStones, whiteStones, territories };
 }
 
@@ -219,7 +169,7 @@ export function calculateTerritory(
   signMap: SignMap,
   deadStones: Set<string>
 ): { blackTerritory: number; whiteTerritory: number; territories: SignMap } {
-  const result = calculateScore(signMap, deadStones, 'territory', null);
+  const result = calculateScore(signMap, deadStones, 'territory');
   return {
     blackTerritory: result.blackTerritory,
     whiteTerritory: result.whiteTerritory,
