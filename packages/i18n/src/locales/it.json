@@ -36,6 +36,9 @@
   "hideSidebar": "Nascondi barra laterale",
   "home": "Home",
   "komi": "Komi:",
+  "rules": "Regole:",
+  "rulesJapanese": "Giapponesi",
+  "rulesChinese": "Cinesi",
   "language": "Lingua",
   "learnMore": "Scopri di più su Sensei's Library",
   "libraryRoot": "Radice libreria",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}} pietre segnate come morte",
     "finalScore": "Punteggio",
     "estimate": "Stima",
-    "estimateDescription": "Stima del territorio con simulazione Monte Carlo (funziona con bordi aperti)"
+    "estimateDescription": "Stima del territorio con simulazione Monte Carlo (funziona con bordi aperti)",
+    "methodTerritory": "Territorio",
+    "methodArea": "Area",
+    "stones": "Pietre:",
+    "territoryMethodDescription": "Giapponesi: solo punti vuoti. Gli occhi di seki e i falsi occhi non contano. Le catture e le pietre morte sì.",
+    "areaMethodDescription": "Cinesi: pietre vive più punti vuoti circondati. Le pietre in seki contano. Le libertà condivise no."
   },
   "mobileTab": {
     "board": "Tavola",

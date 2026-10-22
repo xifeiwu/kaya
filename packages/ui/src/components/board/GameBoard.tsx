@@ -76,6 +76,8 @@ export const GameBoard: React.FC = memo(() => {
     isEstimating,
     estimationMode,
     toggleEstimationMode,
+    scoringMethod,
+    setScoringMethod,
     scoreData,
   } = useGameTreeScore();
   const { showAnalysisBar, toggleShowAnalysisBar } = useGameTreeAI();
@@ -337,6 +339,8 @@ export const GameBoard: React.FC = memo(() => {
           isEstimating={isEstimating}
           estimationMode={estimationMode}
           onToggleEstimationMode={toggleEstimationMode}
+          scoringMethod={scoringMethod}
+          onSetScoringMethod={setScoringMethod}
         />
       ) : (
         gameSettings.showBoardControls && <BoardControls />

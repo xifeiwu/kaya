@@ -100,7 +100,7 @@ export {
 export { LoadingOverlay } from './components/ui/LoadingOverlay';
 export { SaveStatus } from './components/ui/SaveStatus';
 export { ScoreEstimator } from './components/board/ScoreEstimator';
-export type { ScoreData } from './types/game';
+export type { ScoreData, ScoringMethod, Ruleset } from './types/game';
 export { useAIAnalysis } from './components/ai/AIAnalysisOverlay';
 export { AIStatusPill } from './components/ai/AIStatusPill';
 export { AnalysisGraphPanel } from './components/analysis/AnalysisGraphPanel';

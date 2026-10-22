@@ -225,6 +225,8 @@ export function useGameTreeScore() {
         isEstimating: ctx.isEstimating,
         estimationMode: ctx.estimationMode,
         toggleEstimationMode: ctx.toggleEstimationMode,
+        scoringMethod: ctx.scoringMethod,
+        setScoringMethod: ctx.setScoringMethod,
       }),
       []
     ),

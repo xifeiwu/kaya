@@ -36,6 +36,9 @@
   "hideSidebar": "Seitenleiste ausblenden",
   "home": "Startseite",
   "komi": "Komi:",
+  "rules": "Regeln:",
+  "rulesJapanese": "Japanisch",
+  "rulesChinese": "Chinesisch",
   "language": "Sprache",
   "learnMore": "Mehr erfahren auf Sensei's Library",
   "libraryRoot": "Bibliothek-Stammverzeichnis",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}} Steine als tot markiert",
     "finalScore": "Wertung",
     "estimate": "Schätzung",
-    "estimateDescription": "Gebiet mit Monte-Carlo-Simulation schätzen (funktioniert mit offenen Grenzen)"
+    "estimateDescription": "Gebiet mit Monte-Carlo-Simulation schätzen (funktioniert mit offenen Grenzen)",
+    "methodTerritory": "Gebiet",
+    "methodArea": "Fläche",
+    "stones": "Steine:",
+    "territoryMethodDescription": "Japanisch: nur leere Punkte. Seki-Augen und falsche Augen zählen nicht. Gefangene und tote Steine zählen.",
+    "areaMethodDescription": "Chinesisch: lebende Steine plus umschlossene leere Punkte. Seki-Steine zählen. Geteilte Freiheiten zählen nicht."
   },
   "mobileTab": {
     "board": "Brett",

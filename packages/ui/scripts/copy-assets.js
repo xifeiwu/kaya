@@ -9,7 +9,9 @@ function copyAssets(src, dest) {
     fs.mkdirSync(dest, { recursive: true });
   }
 
-  const extensions = ['.css', '.svg', '.png', '.ogg', '.wav'];
+  // .mjs: vendored goscorer. tsc does not emit it, and scoring.js imports it
+  // from the same relative path in dist.
+  const extensions = ['.css', '.svg', '.png', '.ogg', '.wav', '.mjs'];
 
   fs.readdirSync(src).forEach(file => {
     const srcPath = path.join(src, file);

@@ -105,9 +105,29 @@
 }
 
 .form-row input[type='text']:focus,
-.form-row input[type='number']:focus {
+.form-row input[type='number']:focus,
+.form-row select:focus {
   outline: none;
   border-color: var(--accent-color);
+}
+
+/* Native dropdown, same weight as the komi field. OGS uses a form-control select. */
+.form-row select.rules-dropdown {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .new-game-dialog {
+    min-width: 0;
+    width: calc(100vw - 1.5rem);
+  }
 }
 
 .board-size-options {

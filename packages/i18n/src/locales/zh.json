@@ -36,6 +36,9 @@
   "hideSidebar": "隐藏侧边栏",
   "home": "首页",
   "komi": "贴目：",
+  "rules": "规则：",
+  "rulesJapanese": "日本",
+  "rulesChinese": "中国",
   "language": "语言",
   "learnMore": "在 Sensei's Library 了解更多",
   "libraryRoot": "棋库根目录",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}} 颗棋子标记为死子",
     "finalScore": "计分",
     "estimate": "估算",
-    "estimateDescription": "使用蒙特卡洛模拟估算领地（适用于未封闭边界）"
+    "estimateDescription": "使用蒙特卡洛模拟估算领地（适用于未封闭边界）",
+    "methodTerritory": "数目",
+    "methodArea": "数子",
+    "stones": "活子：",
+    "territoryMethodDescription": "日本规则：只数空点。双活的眼和假眼不计。提子和死子计入。",
+    "areaMethodDescription": "中国规则：活子加上被围的空点。双活的棋子计入。双方共有的气不计。"
   },
   "mobileTab": {
     "board": "棋盘",

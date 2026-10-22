@@ -11,6 +11,7 @@ import {
 } from '@kaya/sgf';
 import { getHandicapStones, type Vertex } from '@kaya/goboard';
 import { type SGFProperty, type NewGameConfig } from '../../types/game';
+import { sgfRulesValue } from '../../services/scoring';
 import { validateTreeIntegrity } from '../../utils/treeValidation';
 import { clearAllCaches } from '../../utils/gameCache';
 import { determineStartNodeId } from './determineStartNode';
@@ -106,7 +107,9 @@ export function useGameTreeState() {
     const newTree = new GameTree<SGFProperty>({
       root: {
         id: 0,
-        data: { SZ: ['19'], KM: ['6.5'] },
+        // Japanese is the New Game default, so the info panel and scoring agree
+        // before the player opens the dialog.
+        data: { SZ: ['19'], KM: ['6.5'], RU: ['Japanese'] },
         parentId: null,
         children: [],
       },
@@ -247,6 +250,8 @@ export function useGameTreeState() {
       KM: [
         config?.komi !== undefined && Number.isFinite(config.komi) ? String(config.komi) : '6.5',
       ],
+      // Chosen at game start. Scoring and the Game Info panel both read RU.
+      RU: [sgfRulesValue(config?.rules)],
       GM: ['1'],
       FF: ['4'],
       CA: ['UTF-8'],

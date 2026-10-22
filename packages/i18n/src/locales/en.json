@@ -36,6 +36,9 @@
   "hideSidebar": "Hide Sidebar",
   "home": "Home",
   "komi": "Komi:",
+  "rules": "Rules:",
+  "rulesJapanese": "Japanese",
+  "rulesChinese": "Chinese",
   "language": "Language",
   "learnMore": "Learn more on Sensei's Library",
   "libraryRoot": "Library Root",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}} stones marked as dead",
     "finalScore": "Score",
     "estimate": "Estimate",
-    "estimateDescription": "Estimate territory using Monte Carlo simulation (works with open borders)"
+    "estimateDescription": "Estimate territory using Monte Carlo simulation (works with open borders)",
+    "methodTerritory": "Territory",
+    "methodArea": "Area",
+    "stones": "Stones:",
+    "territoryMethodDescription": "Japanese: empty points only. Seki eyes and false eyes do not count. Captures and dead stones do.",
+    "areaMethodDescription": "Chinese: living stones plus surrounded empty points. Seki stones count. Shared liberties do not."
   },
   "mobileTab": {
     "board": "Board",

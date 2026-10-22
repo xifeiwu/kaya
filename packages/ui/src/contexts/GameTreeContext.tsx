@@ -197,6 +197,8 @@ export const GameTreeProvider: React.FC<{
     isEstimating,
     estimationMode,
     toggleEstimationMode,
+    scoringMethod,
+    setScoringMethod,
   } = useScoring({ currentBoard, gameInfo });
 
   // 7. AI Analysis
@@ -380,6 +382,8 @@ export const GameTreeProvider: React.FC<{
       isEstimating,
       estimationMode,
       toggleEstimationMode,
+      scoringMethod,
+      setScoringMethod,
       analysisMode,
       setAnalysisMode,
       analysisResult,
@@ -465,7 +469,7 @@ export const GameTreeProvider: React.FC<{
       clearAllMarkersAndLabels, addMarker, setNodeName, setNodeComment,
       deleteNode, cutNode, deleteContinuation, copyNode, pasteNode, flattenVariations, makeMainVariation, shiftVariation, toggleEditMode,
       copiedBranch, scoreMode, scoreData, deadStones, toggleDeadStone, autoScore, resetScore,
-      isEstimating, estimationMode, toggleEstimationMode,
+      isEstimating, estimationMode, toggleEstimationMode, scoringMethod, setScoringMethod,
       analysisMode, analysisResult, isAnalyzing, winRate, scoreLead, bestMove, engineState,
       filename, isDirty, moveName, moveUrl, patternMatchingEnabled, setPatternMatchingEnabled,
       lastSaveTime, triggerAutoSave, undo, redo, canUndo, canRedo, deleteOtherBranches,

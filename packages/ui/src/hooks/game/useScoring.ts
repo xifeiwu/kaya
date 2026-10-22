@@ -2,12 +2,12 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { type Vertex, type GoBoard } from '@kaya/goboard';
 import { getProbabilityMap } from '@kaya/deadstones';
 import {
-  calculateTerritory,
-  calculateEstimatedTerritory,
+  calculateScore,
   countDeadStones,
   DEAD_STONE_THRESHOLD,
+  scoringMethodForRules,
 } from '../../services/scoring';
-import { type GameInfo, type ScoreData } from '../../types/game';
+import { type GameInfo, type ScoreData, type ScoringMethod } from '../../types/game';
 import { DEFAULT_KOMI } from '@kaya/ai-engine';
 
 interface UseScoringProps {
@@ -33,25 +33,26 @@ function computeScoreData(
   currentBoard: GoBoard,
   deadStones: Set<string>,
   komi: number,
+  method: ScoringMethod,
   probabilityMap: number[][] | null
 ): { scoreData: ScoreData; territories: number[][] } {
-  const territoryResult = probabilityMap
-    ? calculateEstimatedTerritory(currentBoard.signMap, probabilityMap, deadStones)
-    : calculateTerritory(currentBoard.signMap, deadStones);
-
+  const scored = calculateScore(currentBoard.signMap, deadStones, method, probabilityMap);
   const { blackDeadStones, whiteDeadStones } = countDeadStones(currentBoard.signMap, deadStones);
 
   return {
     scoreData: {
-      blackTerritory: territoryResult.blackTerritory,
-      whiteTerritory: territoryResult.whiteTerritory,
+      method: scored.method,
+      blackTerritory: scored.blackTerritory,
+      whiteTerritory: scored.whiteTerritory,
+      blackStones: scored.blackStones,
+      whiteStones: scored.whiteStones,
       blackCaptures: currentBoard.getCaptures(1),
       whiteCaptures: currentBoard.getCaptures(-1),
       blackDeadStones,
       whiteDeadStones,
       komi,
     },
-    territories: territoryResult.territories,
+    territories: scored.territories,
   };
 }
 
@@ -61,8 +62,11 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
   const [isEstimating, setIsEstimating] = useState(false);
   const [estimationMode, setEstimationMode] = useState(true);
   const [probabilityMap, setProbabilityMap] = useState<number[][] | null>(null);
+  // null follows gameInfo.rules. A panel toggle pins the method until score mode closes.
+  const [methodOverride, setMethodOverride] = useState<ScoringMethod | null>(null);
 
   const komi = gameInfo.komi ?? DEFAULT_KOMI;
+  const scoringMethod = methodOverride ?? scoringMethodForRules(gameInfo.rules);
 
   // Derive territory map and score data from deadStones (always in sync)
   const { territoryMap, scoreData } = useMemo(() => {
@@ -73,26 +77,54 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
       currentBoard,
       deadStones,
       komi,
+      scoringMethod,
       estimationMode ? probabilityMap : null
     );
     return { territoryMap: result.territories, scoreData: result.scoreData };
-  }, [scoreMode, currentBoard, deadStones, komi, estimationMode, probabilityMap]);
+  }, [scoreMode, currentBoard, deadStones, komi, scoringMethod, estimationMode, probabilityMap]);
 
-  // Derive dead stones from a probability map
+  const setScoringMethod = useCallback((method: ScoringMethod) => {
+    setMethodOverride(method);
+  }, []);
+
+  // A group is removed together, the same way a click toggles the whole chain.
   const deriveDeadStones = useCallback((probMap: number[][], signMap: number[][]) => {
+    const height = signMap.length;
+    const width = signMap[0]?.length || 0;
+    const seen = new Set<string>();
     const dead = new Set<string>();
-    for (let y = 0; y < signMap.length; y++) {
-      for (let x = 0; x < (signMap[0]?.length || 0); x++) {
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
         const sign = signMap[y][x];
         if (sign === 0) continue;
-        const prob = probMap[y]?.[x] ?? 0;
-        // Black stone (1) in white territory (prob < -threshold) => dead
-        // White stone (-1) in black territory (prob > threshold) => dead
-        if (
-          (sign === 1 && prob < -DEAD_STONE_THRESHOLD) ||
-          (sign === -1 && prob > DEAD_STONE_THRESHOLD)
-        ) {
-          dead.add(`${x},${y}`);
+        const startKey = `${x},${y}`;
+        if (seen.has(startKey)) continue;
+
+        const chain: string[] = [];
+        const stack: Vertex[] = [[x, y]];
+        let hostile = 0;
+        while (stack.length > 0) {
+          const [cx, cy] = stack.pop()!;
+          if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
+          if (signMap[cy][cx] !== sign) continue;
+          const key = `${cx},${cy}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          chain.push(key);
+          const prob = probMap[cy]?.[cx] ?? 0;
+          // Black stone in white territory, or white stone in black territory.
+          if (
+            (sign === 1 && prob < -DEAD_STONE_THRESHOLD) ||
+            (sign === -1 && prob > DEAD_STONE_THRESHOLD)
+          ) {
+            hostile++;
+          }
+          stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
+        }
+
+        if (hostile * 2 > chain.length) {
+          for (const key of chain) dead.add(key);
         }
       }
     }
@@ -174,6 +206,7 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
     } else {
       setDeadStones(new Set());
       setEstimationMode(true);
+      setMethodOverride(null);
       setProbabilityMap(null);
     }
   }, [scoreMode, autoScore]);
@@ -219,5 +252,7 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
     isEstimating,
     estimationMode,
     toggleEstimationMode,
+    scoringMethod,
+    setScoringMethod,
   };
 }

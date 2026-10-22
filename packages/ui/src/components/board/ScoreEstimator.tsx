@@ -10,7 +10,8 @@ import React, { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { LuCalculator, LuLoader, LuX, LuChevronDown, LuChevronUp, LuTrophy } from 'react-icons/lu';
 import { useLayoutMode } from '../../hooks/useMediaQuery';
-import { type ScoreData } from '../../types/game';
+import { scoreTotals } from '../../services/scoring';
+import { type ScoreData, type ScoringMethod } from '../../types/game';
 import './ScoreEstimator.css';
 import './ScoreEstimator.responsive.css';
 
@@ -25,6 +26,8 @@ interface ScoreEstimatorProps {
   isEstimating: boolean;
   estimationMode: boolean;
   onToggleEstimationMode: () => void;
+  scoringMethod: ScoringMethod;
+  onSetScoringMethod: (method: ScoringMethod) => void;
 }
 
 export const ScoreEstimator: React.FC<ScoreEstimatorProps> = memo(
@@ -39,6 +42,8 @@ export const ScoreEstimator: React.FC<ScoreEstimatorProps> = memo(
     isEstimating,
     estimationMode,
     onToggleEstimationMode,
+    scoringMethod,
+    onSetScoringMethod,
   }) => {
     const { t } = useTranslation();
     const layoutMode = useLayoutMode();
@@ -46,25 +51,13 @@ export const ScoreEstimator: React.FC<ScoreEstimatorProps> = memo(
     const [showDetails, setShowDetails] = useState(!isCompact);
 
     const finalScore = useMemo(() => {
-      const {
-        blackTerritory,
-        whiteTerritory,
-        blackCaptures,
-        whiteCaptures,
-        blackDeadStones,
-        whiteDeadStones,
-        komi,
-      } = scoreData;
-
-      const blackScore = blackTerritory + blackCaptures + whiteDeadStones;
-      const whiteScore = whiteTerritory + whiteCaptures + blackDeadStones + komi;
-
-      const difference = blackScore - whiteScore;
+      const { black, white } = scoreTotals(scoreData);
+      const difference = black - white;
       const winner = difference > 0 ? 'Black' : difference < 0 ? 'White' : 'Jigo';
       const margin = Math.abs(difference);
-
-      return { blackScore, whiteScore, winner, margin };
+      return { blackScore: black, whiteScore: white, winner, margin };
     }, [scoreData]);
+    const areaScoring = scoringMethod === 'area';
 
     const blackName = playerBlack || t('gameInfo.black');
     const whiteName = playerWhite || t('gameInfo.white');
@@ -87,6 +80,26 @@ export const ScoreEstimator: React.FC<ScoreEstimatorProps> = memo(
             type="button"
           >
             {t('scoring.finalScore')}
+          </button>
+        </div>
+
+        {/* Ruleset toggle. The default follows Game Info; this only changes the view. */}
+        <div className="score-method-toggle">
+          <button
+            className={`score-method-btn ${!areaScoring ? 'active' : ''}`}
+            onClick={areaScoring ? () => onSetScoringMethod('territory') : undefined}
+            type="button"
+            title={t('scoring.territoryMethodDescription')}
+          >
+            {t('scoring.methodTerritory')}
+          </button>
+          <button
+            className={`score-method-btn ${areaScoring ? 'active' : ''}`}
+            onClick={!areaScoring ? () => onSetScoringMethod('area') : undefined}
+            type="button"
+            title={t('scoring.areaMethodDescription')}
+          >
+            {t('scoring.methodArea')}
           </button>
         </div>
 
@@ -147,17 +160,29 @@ export const ScoreEstimator: React.FC<ScoreEstimatorProps> = memo(
               <div className="score-detail-header">{t('gameInfo.black')}</div>
               <div className="score-detail-header">{t('gameInfo.white')}</div>
 
+              {areaScoring && (
+                <>
+                  <div className="score-detail-label">{t('scoring.stones')}</div>
+                  <div className="score-detail-value">{scoreData.blackStones}</div>
+                  <div className="score-detail-value">{scoreData.whiteStones}</div>
+                </>
+              )}
+
               <div className="score-detail-label">{t('scoring.territory')}</div>
               <div className="score-detail-value">{scoreData.blackTerritory}</div>
               <div className="score-detail-value">{scoreData.whiteTerritory}</div>
 
-              <div className="score-detail-label">{t('scoring.captures')}</div>
-              <div className="score-detail-value">{scoreData.blackCaptures}</div>
-              <div className="score-detail-value">{scoreData.whiteCaptures}</div>
+              {!areaScoring && (
+                <>
+                  <div className="score-detail-label">{t('scoring.captures')}</div>
+                  <div className="score-detail-value">{scoreData.blackCaptures}</div>
+                  <div className="score-detail-value">{scoreData.whiteCaptures}</div>
 
-              <div className="score-detail-label">{t('scoring.deadStones')}</div>
-              <div className="score-detail-value">{scoreData.whiteDeadStones}</div>
-              <div className="score-detail-value">{scoreData.blackDeadStones}</div>
+                  <div className="score-detail-label">{t('scoring.deadStones')}</div>
+                  <div className="score-detail-value">{scoreData.whiteDeadStones}</div>
+                  <div className="score-detail-value">{scoreData.blackDeadStones}</div>
+                </>
+              )}
 
               <div className="score-detail-label">{t('scoring.komi')}</div>
               <div className="score-detail-value score-detail-muted">&mdash;</div>

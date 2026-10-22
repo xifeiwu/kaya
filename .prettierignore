@@ -15,6 +15,9 @@ build/
 # Generated files
 *.d.ts
 
+# Vendored goscorer (lightvector). Keep the original formatting.
+packages/ui/src/services/goscorer/goscorer.mjs
+
 # Package manager
 pnpm-lock.yaml
 bun.lockb

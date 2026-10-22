@@ -36,6 +36,9 @@
   "hideSidebar": "Masquer",
   "home": "Accueil",
   "komi": "Komi :",
+  "rules": "Règles :",
+  "rulesJapanese": "Japonaises",
+  "rulesChinese": "Chinoises",
   "language": "Langue",
   "learnMore": "En savoir plus",
   "libraryRoot": "Bibliothèque",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}} pierres marquées mortes",
     "finalScore": "Score",
     "estimate": "Estimation",
-    "estimateDescription": "Estimer le territoire par simulation Monte Carlo (fonctionne avec des frontières ouvertes)"
+    "estimateDescription": "Estimer le territoire par simulation Monte Carlo (fonctionne avec des frontières ouvertes)",
+    "methodTerritory": "Territoire",
+    "methodArea": "Aire",
+    "stones": "Pierres :",
+    "territoryMethodDescription": "Japonaises : points vides seulement. Les yeux de seki et les faux yeux ne comptent pas. Les captures et les pierres mortes comptent.",
+    "areaMethodDescription": "Chinoises : pierres vivantes plus les points vides entourés. Les pierres en seki comptent. Les libertés partagées ne comptent pas."
   },
   "mobileTab": {
     "board": "Goban",

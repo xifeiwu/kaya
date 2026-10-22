@@ -279,6 +279,7 @@ export function useHeaderActions(options?: { onNavigateToBoard?: () => void }) {
       rankWhite: '',
       komi: 6.5,
       handicap: 0,
+      rules: 'japanese',
     });
     clearLoadedFile();
   }, [newGame, currentBoard, clearLoadedFile, checkUnsavedChanges]);

@@ -3,6 +3,7 @@
  *
  * Allows user to configure:
  * - Board size (9, 13, 19)
+ * - Rules (Japanese or Chinese). Switching rules sets that ruleset's komi.
  * - Player names
  * - Player ranks
  * - Komi
@@ -12,17 +13,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCloseOnBack } from '../../hooks/useCloseOnBack';
+import { defaultKomiForRules } from '../../services/scoring';
+import type { NewGameConfig, Ruleset } from '../../types/game';
 import './NewGameDialog.css';
-
-interface NewGameConfig {
-  boardSize: number;
-  playerBlack: string;
-  playerWhite: string;
-  rankBlack: string;
-  rankWhite: string;
-  komi: number;
-  handicap: number;
-}
 
 interface NewGameDialogProps {
   isOpen: boolean;
@@ -38,8 +31,14 @@ export const NewGameDialog: React.FC<NewGameDialogProps> = ({ isOpen, onClose, o
   const [playerWhite, setPlayerWhite] = useState<string>('White');
   const [rankBlack, setRankBlack] = useState<string>('');
   const [rankWhite, setRankWhite] = useState<string>('');
+  const [rules, setRules] = useState<Ruleset>('japanese');
   const [komi, setKomi] = useState<number>(6.5);
   const [handicap, setHandicap] = useState<number>(0);
+
+  const handleRulesChange = (next: Ruleset) => {
+    setRules(next);
+    setKomi(defaultKomiForRules(next));
+  };
 
   const handleConfirm = () => {
     onConfirm({
@@ -50,6 +49,7 @@ export const NewGameDialog: React.FC<NewGameDialogProps> = ({ isOpen, onClose, o
       rankWhite,
       komi,
       handicap,
+      rules,
     });
     onClose();
   };
@@ -90,6 +90,21 @@ export const NewGameDialog: React.FC<NewGameDialogProps> = ({ isOpen, onClose, o
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="form-row">
+            <label htmlFor="rules">{t('rules')}</label>
+            <select
+              id="rules"
+              className="rules-dropdown"
+              value={rules}
+              onChange={e =>
+                handleRulesChange(e.target.value === 'chinese' ? 'chinese' : 'japanese')
+              }
+            >
+              <option value="japanese">{t('rulesJapanese')}</option>
+              <option value="chinese">{t('rulesChinese')}</option>
+            </select>
           </div>
 
           <div className="form-row">

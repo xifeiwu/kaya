@@ -36,6 +36,9 @@
   "hideSidebar": "사이드바 숨기기",
   "home": "홈",
   "komi": "덤:",
+  "rules": "규칙:",
+  "rulesJapanese": "일본",
+  "rulesChinese": "중국",
   "language": "언어",
   "learnMore": "Sensei's Library에서 자세히 알아보기",
   "libraryRoot": "라이브러리 루트",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}}개의 돌이 죽은 것으로 표시됨",
     "finalScore": "계가",
     "estimate": "추정",
-    "estimateDescription": "몬테카를로 시뮬레이션으로 영역 추정 (열린 경계에서도 작동)"
+    "estimateDescription": "몬테카를로 시뮬레이션으로 영역 추정 (열린 경계에서도 작동)",
+    "methodTerritory": "집",
+    "methodArea": "중국식",
+    "stones": "산 돌:",
+    "territoryMethodDescription": "일본 규칙: 빈 점만 셉니다. 빅의 눈과 가짜 눈은 세지 않습니다. 따낸 돌과 죽은 돌은 셉니다.",
+    "areaMethodDescription": "중국 규칙: 산 돌과 둘러싸인 빈 점. 빅의 돌은 셉니다. 서로 맞닿은 공배는 세지 않습니다."
   },
   "mobileTab": {
     "board": "바둑판",

@@ -36,6 +36,9 @@
   "hideSidebar": "サイドバーを隠す",
   "home": "ホーム",
   "komi": "コミ:",
+  "rules": "ルール:",
+  "rulesJapanese": "日本",
+  "rulesChinese": "中国",
   "language": "言語",
   "learnMore": "Sensei's Libraryで詳細を見る",
   "libraryRoot": "ライブラリルート",
@@ -528,7 +531,12 @@
     "stonesMarkedDeadPlural": "{{count}}個の石が死に石としてマーク",
     "finalScore": "計算",
     "estimate": "推定",
-    "estimateDescription": "モンテカルロシミュレーションで地を推定（境界が閉じていなくても機能）"
+    "estimateDescription": "モンテカルロシミュレーションで地を推定（境界が閉じていなくても機能）",
+    "methodTerritory": "地",
+    "methodArea": "中国式",
+    "stones": "活き石:",
+    "territoryMethodDescription": "日本ルール：空点のみ。セキの眼と欠け眼は数えません。アゲハマと死に石は数えます。",
+    "areaMethodDescription": "中国ルール：活き石と囲まれた空点。セキの石は数えます。共有のダメは数えません。"
   },
   "mobileTab": {
     "board": "碁盤",

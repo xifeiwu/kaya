@@ -13,6 +13,12 @@ export interface SGFProperty {
 export type GameInfo = SGFGameInfo;
 export type { GameInfoPatch };
 
+/** Rules chosen when a game starts. Stored on the SGF root as RU. */
+export type Ruleset = 'japanese' | 'chinese';
+
+/** Japanese (and Korean) count territory. Chinese counts area. */
+export type ScoringMethod = 'territory' | 'area';
+
 export interface NewGameConfig {
   boardSize: number;
   playerBlack?: string;
@@ -21,11 +27,16 @@ export interface NewGameConfig {
   rankWhite?: string;
   komi?: number;
   handicap?: number;
+  rules?: Ruleset;
 }
 
 export interface ScoreData {
+  method: ScoringMethod;
   blackTerritory: number;
   whiteTerritory: number;
+  /** Living stones. Area scoring counts these; territory scoring leaves them at 0. */
+  blackStones: number;
+  whiteStones: number;
   blackCaptures: number;
   whiteCaptures: number;
   blackDeadStones: number;
@@ -316,6 +327,8 @@ export interface GameTreeContextValue {
   isEstimating: boolean;
   estimationMode: boolean;
   toggleEstimationMode: () => void;
+  scoringMethod: ScoringMethod;
+  setScoringMethod: (method: ScoringMethod) => void;
   toggleAnalysisMode: () => void;
   updateComment: (comment: string) => void;
   editPlayMode: boolean;
