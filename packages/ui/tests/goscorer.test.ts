@@ -11,6 +11,7 @@ import {
   scoreTotals,
   scoringMethodForRules,
   sgfRulesValue,
+  suggestDeadStones,
 } from '../src/services/scoring';
 import type { ScoreCounts } from '../src/services/scoring';
 
@@ -109,5 +110,45 @@ describe('goscorer positions', () => {
     });
     expect(totals.white).toBe(16 + 9 + 7.5);
     expect(totals.black).toBe(0);
+  });
+
+  test('a dame-connected group is not removed, and estimate does not paint non-dame empties', () => {
+    const signMap = board([
+      '...XXOOXXXX..',
+      '...XOO.O.OXX.',
+      '...XO.O.OOOOX',
+      '...XXOO.X.OX.',
+      '.XXXOOXXXXXXX',
+      'X..XOOOOOO.X.',
+      '.XXOOXOO.OOOX',
+      '...XXXXXOOXOO',
+      '......XXXOXXO',
+      '.XXX.X..XXXXX',
+      'X..X..XXOOOOX',
+      '.XXOO.XOO..OO',
+      '......XXXOO..',
+    ]);
+    const prob = signMap.map(row => row.map(() => 0));
+    // D2 and E2. Monte Carlo can call both hostile; they only share dame.
+    prob[11][3] = 1;
+    prob[11][4] = 1;
+    expect(suggestDeadStones(signMap, prob).size).toBe(0);
+
+    const hostile = signMap.map(row => row.map(() => 1));
+    const estimated = calculateScore(signMap, new Set(), 'territory', hostile);
+    // A6 is empty and not dame, so the rules score leaves it blank.
+    expect(estimated.territories[7][0]).toBe(0);
+    expect(estimated.blackTerritory).toBe(24);
+    expect(estimated.whiteTerritory).toBe(7);
+  });
+
+  test('stones enclosed with no dame liberty are still marked dead', () => {
+    const signMap = board(['OOOOO', 'OXXXO', 'OX.XO', 'OXXXO', 'OOOOO']);
+    const prob = signMap.map(row => row.map(sign => (sign === 1 ? -1 : 0)));
+    const dead = suggestDeadStones(signMap, prob);
+    expect([...dead].sort()).toEqual(
+      ['1,1', '1,2', '1,3', '2,1', '2,3', '3,1', '3,2', '3,3'].sort()
+    );
+    expect(calculateScore(signMap, dead, 'territory', null).whiteTerritory).toBe(9);
   });
 });

@@ -4,8 +4,8 @@ import { getProbabilityMap } from '@kaya/deadstones';
 import {
   calculateScore,
   countDeadStones,
-  DEAD_STONE_THRESHOLD,
   scoringMethodForRules,
+  suggestDeadStones,
 } from '../../services/scoring';
 import { type GameInfo, type ScoreData, type ScoringMethod } from '../../types/game';
 import { DEFAULT_KOMI } from '@kaya/ai-engine';
@@ -87,50 +87,6 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
     setMethodOverride(method);
   }, []);
 
-  // A group is removed together, the same way a click toggles the whole chain.
-  const deriveDeadStones = useCallback((probMap: number[][], signMap: number[][]) => {
-    const height = signMap.length;
-    const width = signMap[0]?.length || 0;
-    const seen = new Set<string>();
-    const dead = new Set<string>();
-
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const sign = signMap[y][x];
-        if (sign === 0) continue;
-        const startKey = `${x},${y}`;
-        if (seen.has(startKey)) continue;
-
-        const chain: string[] = [];
-        const stack: Vertex[] = [[x, y]];
-        let hostile = 0;
-        while (stack.length > 0) {
-          const [cx, cy] = stack.pop()!;
-          if (cx < 0 || cx >= width || cy < 0 || cy >= height) continue;
-          if (signMap[cy][cx] !== sign) continue;
-          const key = `${cx},${cy}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          chain.push(key);
-          const prob = probMap[cy]?.[cx] ?? 0;
-          // Black stone in white territory, or white stone in black territory.
-          if (
-            (sign === 1 && prob < -DEAD_STONE_THRESHOLD) ||
-            (sign === -1 && prob > DEAD_STONE_THRESHOLD)
-          ) {
-            hostile++;
-          }
-          stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1]);
-        }
-
-        if (hostile * 2 > chain.length) {
-          for (const key of chain) dead.add(key);
-        }
-      }
-    }
-    return dead;
-  }, []);
-
   // Compute probability map and derive dead stones from it
   const isAutoScoreRef = useRef(false);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -143,7 +99,7 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
 
       // Pass 1: detect dead stones from the original board
       const initialProbMap = await getProbabilityMap(currentBoard.signMap, INITIAL_ITERATIONS);
-      const dead = deriveDeadStones(initialProbMap, currentBoard.signMap);
+      const dead = suggestDeadStones(currentBoard.signMap, initialProbMap);
 
       // Pass 2: recompute prob map with dead stones removed for accurate territory
       let finalProbMap = initialProbMap;
@@ -161,7 +117,7 @@ export function useScoring({ currentBoard, gameInfo }: UseScoringProps) {
     } finally {
       setIsEstimating(false);
     }
-  }, [currentBoard, deriveDeadStones]);
+  }, [currentBoard]);
 
   // Re-run Monte Carlo when dead stones are toggled manually
   useEffect(() => {

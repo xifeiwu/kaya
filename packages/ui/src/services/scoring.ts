@@ -193,6 +193,9 @@ export function calculateScore(
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (signMap[y][x] !== 0 || territories[y][x] !== 0 || blocked[y][x]) continue;
+        // Goscorer left non-dame empties blank on purpose: false eyes, and points
+        // the other color can still reach. Estimate only fills dame.
+        if (!scored[y][x].isDame) continue;
         const prob = probabilityMap[y]?.[x] ?? 0;
         if (prob > TERRITORY_THRESHOLD) {
           territories[y][x] = 1;
@@ -222,6 +225,75 @@ export function calculateTerritory(
     whiteTerritory: result.whiteTerritory,
     territories: result.territories,
   };
+}
+
+/**
+ * Stones whose ownership is hostile, grouped by chain.
+ * A group with fewer than two eyes that still shares a dame liberty is not
+ * removed: Monte Carlo fills that liberty and reports the stones dead, while
+ * Japanese scoring leaves them. A group inside the opponent has no dame
+ * liberty, so it can still be marked dead.
+ */
+export function suggestDeadStones(signMap: SignMap, probabilityMap: number[][]): Set<string> {
+  const height = signMap.length;
+  const width = signMap[0]?.length ?? 0;
+  const scored = goscorer.territoryScoring(
+    toColorMap(signMap),
+    toMarkedDead(signMap, new Set()),
+    false
+  );
+  const seen = new Set<string>();
+  const dead = new Set<string>();
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const sign = signMap[y][x];
+      if (sign === 0 || seen.has(`${x},${y}`)) continue;
+
+      const chain: string[] = [];
+      const stack: Array<[number, number]> = [[x, y]];
+      let hostile = 0;
+      let dameLiberty = false;
+      let sekiStone = false;
+
+      while (stack.length > 0) {
+        const [cx, cy] = stack.pop()!;
+        if (cx < 0 || cy < 0 || cx >= width || cy >= height) continue;
+        if (signMap[cy][cx] !== sign) continue;
+        const key = `${cx},${cy}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        chain.push(key);
+        if (scored[cy][cx].belongsToSekiGroup !== goscorer.EMPTY) sekiStone = true;
+
+        const prob = probabilityMap[cy]?.[cx] ?? 0;
+        if (
+          (sign === 1 && prob < -DEAD_STONE_THRESHOLD) ||
+          (sign === -1 && prob > DEAD_STONE_THRESHOLD)
+        ) {
+          hostile++;
+        }
+
+        const neighbors: Array<[number, number]> = [
+          [cx + 1, cy],
+          [cx - 1, cy],
+          [cx, cy + 1],
+          [cx, cy - 1],
+        ];
+        for (const [nx, ny] of neighbors) {
+          if (ny < 0 || nx < 0 || ny >= height || nx >= width) continue;
+          if (signMap[ny][nx] === 0 && scored[ny][nx].isDame) dameLiberty = true;
+          stack.push([nx, ny]);
+        }
+      }
+
+      if (sekiStone && dameLiberty) continue;
+      if (hostile * 2 <= chain.length) continue;
+      for (const key of chain) dead.add(key);
+    }
+  }
+
+  return dead;
 }
 
 /** Count dead stones by color from the dead stones set. */
